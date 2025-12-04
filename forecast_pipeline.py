@@ -5,7 +5,7 @@ import logging
 from datetime import timedelta
 
 REQUIRED_COLUMNS = [...]
-# Например: ["date", "atm_id", "withdrawals", "deposits", "is_holiday", "is_weekend", "day_of_week"]
+# ГЌГ ГЇГ°ГЁГ¬ГҐГ°: ["date", "atm_id", "withdrawals", "deposits", "is_holiday", "is_weekend", "day_of_week"]
 
 class CashForecastPipeline:
     def __init__(self, model_path):
@@ -34,7 +34,7 @@ class CashForecastPipeline:
             df[f"net_flow_lag_{lag}"] = df.groupby("atm_id")["net_flow"].shift(lag)
         df["net_flow_roll_7"] = df.groupby("atm_id")["net_flow"].rolling(window=7, min_periods=3).mean().reset_index(level=0, drop=True)
         df["holiday_tomorrow"] = df.groupby("atm_id")["is_holiday"].shift(-1)
-        df = df.dropna()  # после создания признаков
+        df = df.dropna()  # ГЇГ®Г±Г«ГҐ Г±Г®Г§Г¤Г Г­ГЁГї ГЇГ°ГЁГ§Г­Г ГЄГ®Гў
         return df
 
     def forecast_14_days(self, df_raw):
@@ -49,5 +49,5 @@ class CashForecastPipeline:
                 pred = self.model.predict(X.iloc[[-1]])[0]
                 forecast_date = group["date"].max() + timedelta(days=day + 1)
                 forecasts.append({"atm_id": atm_id, "date": forecast_date, "predicted_balance": pred})
-                # для следующего шага можно добавить предсказание к данным (упрощённо)
+                # Г¤Г«Гї Г±Г«ГҐГ¤ГіГѕГ№ГҐГЈГ® ГёГ ГЈГ  Г¬Г®Г¦Г­Г® Г¤Г®ГЎГ ГўГЁГІГј ГЇГ°ГҐГ¤Г±ГЄГ Г§Г Г­ГЁГҐ ГЄ Г¤Г Г­Г­Г»Г¬ (ГіГЇГ°Г®Г№ВёГ­Г­Г®)
         return pd.DataFrame(forecasts)
