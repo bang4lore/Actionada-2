@@ -5,7 +5,6 @@ import logging
 from datetime import timedelta
 
 REQUIRED_COLUMNS = [...]
-# Íàïðèìåð: ["date", "atm_id", "withdrawals", "deposits", "is_holiday", "is_weekend", "day_of_week"]
 
 class CashForecastPipeline:
     def __init__(self, model_path):
@@ -34,7 +33,7 @@ class CashForecastPipeline:
             df[f"net_flow_lag_{lag}"] = df.groupby("atm_id")["net_flow"].shift(lag)
         df["net_flow_roll_7"] = df.groupby("atm_id")["net_flow"].rolling(window=7, min_periods=3).mean().reset_index(level=0, drop=True)
         df["holiday_tomorrow"] = df.groupby("atm_id")["is_holiday"].shift(-1)
-        df = df.dropna()  # ïîñëå ñîçäàíèÿ ïðèçíàêîâ
+        df = df.dropna()
         return df
 
     def forecast_14_days(self, df_raw):
@@ -49,5 +48,5 @@ class CashForecastPipeline:
                 pred = self.model.predict(X.iloc[[-1]])[0]
                 forecast_date = group["date"].max() + timedelta(days=day + 1)
                 forecasts.append({"atm_id": atm_id, "date": forecast_date, "predicted_balance": pred})
-                # äëÿ ñëåäóþùåãî øàãà ìîæíî äîáàâèòü ïðåäñêàçàíèå ê äàííûì (óïðîù¸ííî)
         return pd.DataFrame(forecasts)
+
